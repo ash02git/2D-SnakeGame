@@ -92,10 +92,13 @@ public class PlayerControllerMultiplayer : MonoBehaviour
     }
     private void FixedUpdate()
     {
+        //changing position transform of each segment for movement
         for (int i = segments.Count - 1; i > 0; i--)
         {
             segments[i].position = segments[i - 1].position;
         }
+        
+        //changing transform of snake head for movement
         transform.position = new Vector3(Mathf.Round(transform.position.x) + direction.x, Mathf.Round(transform.position.y) + direction.y, 0.0f);
     }
 
@@ -103,6 +106,7 @@ public class PlayerControllerMultiplayer : MonoBehaviour
     {
         Debug.Log("snake grew in length");
 
+        //adds segmentLength number of new segments 
         for (int i = 1; i <= segmentLength; i++)
         {
             Transform newSegment = Instantiate(segmentPrefab);
@@ -114,15 +118,17 @@ public class PlayerControllerMultiplayer : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
+        //checking if we collided with opponents body
         if(collision.gameObject.CompareTag(opponent.playerNumber) )
         {
             Debug.Log(playerNumber + "has won");
             enabled = false;
             opponent.enabled = false;
-            
             StartCoroutine(DelayedGameOver());
         }
-        if(collision.gameObject.CompareTag(playerNumber))
+
+        //checking if we collided with our own body
+        if (collision.gameObject.CompareTag(playerNumber))
         {
             Debug.Log(opponent.playerNumber + "has won");
             enabled = false;
@@ -131,20 +137,25 @@ public class PlayerControllerMultiplayer : MonoBehaviour
         }
         if (collision.tag == "wall")
         {
-            if (direction == Vector2.down)
-                transform.position = new Vector3(transform.position.x, -collision.transform.position.y - 1, 0.0f);
-            else if (direction == Vector2.up)
-                transform.position = new Vector3(transform.position.x, -collision.transform.position.y + 1, 0.0f);
-            else if (direction == Vector2.right)
-                transform.position = new Vector3(-collision.transform.position.x + 1, transform.position.y, 0.0f);
-            else if (direction == Vector2.left)
-                transform.position = new Vector3(-collision.transform.position.x - 1, transform.position.y, 0.0f);
+            Warp(collision.gameObject);//snake teleports to the opposite wall
         }
         if (collision.tag == "massgainer")
         {
             Grow();
             scm.UpdateScore(2);//putting 2 as score value
         }
+    }
+
+    private void Warp(GameObject wall)
+    {
+        if (direction == Vector2.down)
+            transform.position = new Vector3(transform.position.x, -wall.transform.position.y - 1, 0.0f);
+        else if (direction == Vector2.up)
+            transform.position = new Vector3(transform.position.x, -wall.transform.position.y + 1, 0.0f);
+        else if (direction == Vector2.right)
+            transform.position = new Vector3(-wall.transform.position.x + 1, transform.position.y, 0.0f);
+        else if (direction == Vector2.left)
+            transform.position = new Vector3(-wall.transform.position.x - 1, transform.position.y, 0.0f);
     }
 
     private IEnumerator DelayedGameOver()
