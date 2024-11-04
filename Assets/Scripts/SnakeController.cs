@@ -7,13 +7,18 @@ public class SnakeController : MonoBehaviour
 {
     private Vector2 direction = Vector2.right;
 
+    private bool hasShield;
     public Transform segmentPrefab;
 
     [SerializeField]
     private List<Transform> segments;
 
+    public ScoreController scoreController;
+    public PowerupController powerupController;
+    public GameObject gameoverController;
     private void Awake()
     {
+        hasShield = false;
         segments = new List<Transform>();
         segments.Add(transform);
     }
@@ -55,7 +60,7 @@ public class SnakeController : MonoBehaviour
         transform.position = new Vector3(Mathf.Round(transform.position.x)+direction.x, Mathf.Round(transform.position.y)+direction.y,0.0f);
     }
 
-    public void Grow()
+    private void Grow()
     {
         Debug.Log("snake grew in length");
         Transform newSegment = Instantiate(segmentPrefab);
@@ -80,12 +85,56 @@ public class SnakeController : MonoBehaviour
 
         if(collision.tag=="snakebody")
         {
-            SnakeDied();
+            if(!hasShield)
+                SnakeDied();
+        }
+
+        if(collision.tag=="food")
+        {
+            Grow();
+            scoreController.UpdateScore(2);//putting 2 as score value
+        }
+
+        if(collision.tag=="powerup")
+        {
+            Debug.Log("Picked up powerup");
+
+            PowerupType ptype = collision.gameObject.GetComponent<PowerupInfo>().GetPowerupType();
+
+            if (ptype == PowerupType.Multiplier)
+            {
+                scoreController.MultiplierUpdate(2);
+                powerupController.RefreshUI(ptype, true);
+                StartCoroutine(MultiplierTimer(ptype));
+            }
+            else if (ptype == PowerupType.Shield)
+            {
+                hasShield = true;
+                powerupController.RefreshUI(ptype,true);
+                StartCoroutine(ShieldTimer(ptype));
+            }
+                Destroy(collision.gameObject);
         }
     }
 
     private void SnakeDied()
     {
         Debug.Log("Snake died");
+        enabled = false;
+        gameoverController.SetActive(true);
+    }
+
+    IEnumerator ShieldTimer(PowerupType p)
+    {
+        yield return new WaitForSeconds(5);
+        hasShield = false;
+        powerupController.RefreshUI(p, false);
+    }
+
+    IEnumerator MultiplierTimer(PowerupType p)
+    {
+        yield return new WaitForSeconds(5);
+        scoreController.MultiplierUpdate(1);
+        powerupController.RefreshUI(p, false);
     }
 }
