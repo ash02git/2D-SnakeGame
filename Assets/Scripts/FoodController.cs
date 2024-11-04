@@ -6,8 +6,6 @@ using UnityEngine;
 public class FoodController : MonoBehaviour
 {
     public BoxCollider2D GridArea;
-
-    public UnityEvent FoodGotEaten;// SnakeController.Grow()
     private void Start()
     {
         RandomizePosition();
@@ -24,7 +22,6 @@ public class FoodController : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        FoodGotEaten.Invoke();
         if (collision.GetComponent<SnakeController>() != null)
         {
             RandomizePosition();
