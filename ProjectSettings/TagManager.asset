@@ -8,6 +8,10 @@ TagManager:
   - wall
   - food
   - powerup
+  - massgainer
+  - massburner
+  - Player1
+  - Player2
   layers:
   - Default
   - TransparentFX

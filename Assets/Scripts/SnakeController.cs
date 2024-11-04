@@ -13,6 +13,9 @@ public class SnakeController : MonoBehaviour
     [SerializeField]
     private List<Transform> segments;
 
+    [SerializeField]
+    private int segmentLength;//no of units by which length increases or decreases
+
     public ScoreController scoreController;
     public PowerupController powerupController;
     public GameObject gameoverController;
@@ -63,10 +66,28 @@ public class SnakeController : MonoBehaviour
     private void Grow()
     {
         Debug.Log("snake grew in length");
-        Transform newSegment = Instantiate(segmentPrefab);
-        newSegment.position = segments[segments.Count-1].position;
 
-        segments.Add(newSegment);
+        for (int i = 1; i <= segmentLength; i++)
+        {
+            Transform newSegment = Instantiate(segmentPrefab);
+            newSegment.position = segments[segments.Count - 1].position;
+
+            segments.Add(newSegment);
+        }
+    }
+
+    private void Reduce()
+    {
+        Debug.Log("Snake decreaed in length");
+
+        for (int i = 1; i <= segmentLength; i++)
+        {
+            if (segments.Count > 1)
+            {
+                Destroy(segments[segments.Count - 1].gameObject);
+                segments.RemoveAt(segments.Count - 1);
+            }
+        }
     }
 
     private void OnTriggerEnter2D(Collider2D collision)
@@ -89,10 +110,16 @@ public class SnakeController : MonoBehaviour
                 SnakeDied();
         }
 
-        if(collision.tag=="food")
+        if(collision.tag=="massgainer")
         {
             Grow();
             scoreController.UpdateScore(2);//putting 2 as score value
+        }
+
+        if(collision.tag == "massburner")
+        {
+            Reduce();
+            scoreController.UpdateScore(-2);//putting -2 as score value
         }
 
         if(collision.tag=="powerup")
